@@ -1,0 +1,226 @@
+#include <assert.h>
+#include <ctype.h>
+#include <limits.h>
+#include <math.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+char* readline();
+char* ltrim(char*);
+char* rtrim(char*);
+char** split_string(char*);
+
+int parse_int(char*);
+
+char* gridSearch(int R, char** G, int C, int r, char** P, int c) {
+    int R_limit = R - r;
+    int C_limit = C - c;
+
+    for (int R_start = 0; R_start <= R_limit; R_start++) {
+        for (int C_start = 0; C_start <= C_limit; C_start++) {
+            
+            if (G[R_start][C_start] == P[0][0]) {
+                
+                if (strncmp(G[R_start] + C_start, P[0], c) == 0) {
+                    
+                    bool found = true;
+                    for (int i = 1; i < r; i++) {
+                        if (strncmp(G[R_start + i] + C_start, P[i], c) != 0) {
+                            found = false;
+                            break;
+                        }
+                    }
+                    
+                    if (found) {
+                        return strdup("YES");
+                    }
+                }
+            }
+        }
+    }
+
+    return strdup("NO");
+}
+
+int main()
+{
+    FILE* fptr = fopen(getenv("OUTPUT_PATH"), "w");
+
+    char* t_endptr;
+    char* t_str = ltrim(rtrim(readline()));
+    int t = strtol(t_str, &t_endptr, 10);
+
+    if (t_endptr == t_str || *t_endptr != '\0') {
+        exit(EXIT_FAILURE);
+    }
+
+    for (int t_itr = 0; t_itr < t; t_itr++) {
+        char** RC_temp = split_string(rtrim(readline()));
+
+        int R = parse_int(RC_temp[0]);
+
+        int C = parse_int(RC_temp[1]);
+
+        char** G = (char**)malloc(R * sizeof(char*));
+
+        for (int i = 0; i < R; i++) {
+            char* G_item = readline();
+
+            *(G + i) = G_item;
+        }
+
+        char** rc_temp = split_string(rtrim(readline()));
+
+        int r = parse_int(rc_temp[0]);
+
+        int c = parse_int(rc_temp[1]);
+
+        char** P = (char**)malloc(r * sizeof(char*));
+
+        for (int i = 0; i < r; i++) {
+            char* P_item = readline();
+
+            *(P + i) = P_item;
+        }
+
+        char* result = gridSearch(R, G, C, r, P, c);
+
+        fprintf(fptr, "%s\n", result);
+
+        free(result);
+        for (int i = 0; i < R; i++) free(G[i]);
+        free(G);
+        for (int i = 0; i < r; i++) free(P[i]);
+        free(P);
+        free(RC_temp);
+        free(rc_temp);
+    }
+
+    fclose(fptr);
+
+    return 0;
+}
+
+char* readline() {
+    size_t alloc_length = 1024;
+    size_t data_length = 0;
+
+    char* data = malloc(alloc_length);
+
+    while (true) {
+        char* cursor = data + data_length;
+        char* line = fgets(cursor, alloc_length - data_length, stdin);
+
+        if (!line) {
+            break;
+        }
+
+        data_length += strlen(cursor);
+
+        if (data_length < alloc_length - 1 || data[data_length - 1] == '\n') {
+            break;
+        }
+
+        alloc_length <<= 1;
+
+        data = realloc(data, alloc_length);
+
+        if (!data) {
+            data = '\0';
+
+            break;
+        }
+    }
+
+    if (data[data_length - 1] == '\n') {
+        data[data_length - 1] = '\0';
+
+        data = realloc(data, data_length);
+
+        if (!data) {
+            data = '\0';
+        }
+    } else {
+        data = realloc(data, data_length + 1);
+
+        if (!data) {
+            data = '\0';
+        } else {
+            data[data_length] = '\0';
+        }
+    }
+
+    return data;
+}
+
+char* ltrim(char* str) {
+    if (!str) {
+        return '\0';
+    }
+
+    if (!*str) {
+        return str;
+    }
+
+    while (*str != '\0' && isspace(*str)) {
+        str++;
+    }
+
+    return str;
+}
+
+char* rtrim(char* str) {
+    if (!str) {
+        return '\0';
+    }
+
+    if (!*str) {
+        return str;
+    }
+
+    char* end = str + strlen(str) - 1;
+
+    while (end >= str && isspace(*end)) {
+        end--;
+    }
+
+    *(end + 1) = '\0';
+
+    return str;
+}
+
+char** split_string(char* str) {
+    char** splits = NULL;
+    char* token = strtok(str, " ");
+
+    int spaces = 0;
+
+    while (token) {
+        splits = realloc(splits, sizeof(char*) * ++spaces);
+
+        if (!splits) {
+            return splits;
+        }
+
+        splits[spaces - 1] = token;
+
+        token = strtok(NULL, " ");
+    }
+
+    return splits;
+}
+
+int parse_int(char* str) {
+    char* endptr;
+    int value = strtol(str, &endptr, 10);
+
+    if (endptr == str || *endptr != '\0') {
+        exit(EXIT_FAILURE);
+    }
+
+    return value;
+}
