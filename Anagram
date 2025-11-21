@@ -1,0 +1,67 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <cmath>
+#include <numeric>
+#include <algorithm>
+
+using namespace std;
+
+
+int anagram(string s) {
+    int n = s.length();
+    
+  
+    if (n % 2 != 0) {
+        return -1;
+    }
+    
+    int half_len = n / 2;
+    string s1 = s.substr(0, half_len);
+    string s2 = s.substr(half_len);
+    
+   
+    vector<int> count1(26, 0);
+    vector<int> count2(26, 0);
+    
+    
+    for (char c : s1) {
+        count1[c - 'a']++;
+    }
+    
+    
+    for (char c : s2) {
+        count2[c - 'a']++;
+    }
+    
+  
+    int changes = 0;
+    
+    // Iterate through all 26 possible characters
+    for (int i = 0; i < 26; ++i) {
+        // If s1 has more of a character than s2, those excess characters 
+        // in s1 must be changed.
+        if (count1[i] > count2[i]) {
+            changes += (count1[i] - count2[i]);
+        }
+    }
+    
+    return changes;
+}
+
+int main() {
+    // Fast I/O
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+    
+    int t;
+    if (!(cin >> t)) return 0; // Read the number of test cases
+    
+    while (t--) {
+        string s;
+        cin >> s;
+        cout << anagram(s) << "\n";
+    }
+    
+    return 0;
+}
